@@ -61,17 +61,22 @@ public class Satellite extends Thread {
 
         // register this satellite with the SatelliteManager on the server
         // ---------------------------------------------------------------
-        // ...
-        
         
         // create server socket
         // ---------------------------------------------------------------
         // ...
-        
+        ServerSocket serverSocket = new ServerSocket(satelliteInfo.getPort());
         
         // start taking job requests in a server loop
         // ---------------------------------------------------------------
         // ...
+        while (true) {
+            // Accept incoming job requests
+            Socket jobRequest = serverSocket.accept();
+
+            // Create a new thread to handle the job request
+            new SatelliteThread(jobRequest, this).start();
+        }
     }
 
     // inner helper class that is instanciated in above server loop and processes single job requests
