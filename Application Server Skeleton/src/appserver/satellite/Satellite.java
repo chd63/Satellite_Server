@@ -18,6 +18,7 @@ import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.PropertyHandler;
+import java.util.Properties;
 
 /**
  * Class [Satellite] Instances of this class represent computing nodes that execute jobs by
@@ -37,23 +38,53 @@ public class Satellite extends Thread {
 
         // read this satellite's properties and populate satelliteInfo object,
         // which later on will be sent to the server
-        // ...
+        Properties satelliteProperties = null;
+        Properties serverProperties = null;
+        Properties classLoaderProperties = null;
+
+        try 
+        {
+            satelliteProperties = new PropertyHandler(satellitePropertiesFile);
+        } catch (IOException e) 
+        {
+            System.out.println("[Sattelite] Didn't find properties file \"" + satellitePropertiesFile + "\"");
+            System.exit(1);
+        }
         
+        satelliteInfo.setName(satelliteProperties.getProperty("NAME"));
+        satelliteInfo.setPort(Integer.parseInt(satelliteProperties.getProperty("PORT")));
         
         // read properties of the application server and populate serverInfo object
         // other than satellites, the as doesn't have a human-readable name, so leave it out
-        // ...
-        
+        try 
+        {
+            serverProperties = new PropertyHandler(serverPropertiesFile);
+        } catch (IOException e) 
+        {
+            System.out.println("[Sattelite] Didn't find properties file \"" + serverPropertiesFile + "\"");
+            System.exit(1);
+        }
+
+        serverInfo.setHost(serverProperties.getProperty("HOST"));
+        serverInfo.setPort(Integer.parseInt(serverProperties.getProperty("PORT")));
         
         // read properties of the code server and create class loader
         // -------------------
-        // ...
-
+        try 
+        {
+            classLoaderProperties = new PropertyHandler(classLoaderPropertiesFile);
+        } catch (IOException e) 
+        {
+            System.out.println("[Sattelite] Didn't find properties file \"" + classLoaderPropertiesFile + "\"");
+            System.exit(1);
+        }
         
+        classLoader = new HTTPClassLoader(serverProperties.getProperty("HOST"), 
+                                          Integer.parseInt(serverProperties.getProperty("PORT")));
+
         // create tools cache
         // -------------------
-        // ...
-        
+        toolsCache = new Hashtable<String, Tool>();
     }
 
     @Override
