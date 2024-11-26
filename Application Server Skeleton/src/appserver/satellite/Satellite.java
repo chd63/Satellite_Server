@@ -10,10 +10,12 @@ import appserver.job.Tool;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.server.Operation;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +34,7 @@ public class Satellite extends Thread {
     private ConnectivityInfo satelliteInfo = new ConnectivityInfo();
     private ConnectivityInfo serverInfo = new ConnectivityInfo();
     private HTTPClassLoader classLoader = null;
-    private Hashtable toolsCache = null;
+    private Hashtable<String, Tool> toolsCache = null;
 
     public Satellite(String satellitePropertiesFile, String classLoaderPropertiesFile, String serverPropertiesFile) {
 
@@ -148,8 +150,25 @@ public class Satellite extends Thread {
 
         Tool toolObject = null;
 
-        // ...
-        
+        if ((toolObject = toolsCache.get(toolClassString)) == null) 
+        {
+            Class<?> toolClass = classLoader.loadClass(toolClassString);
+
+            try 
+            {
+                toolObject = (Tool)toolClass.getDeclaredConstructor().newInstance();
+            } 
+            catch (InvocationTargetException | NoSuchMethodException ex) {
+                System.err.println("getToolObject() - Exception");
+            }
+
+            toolsCache.put(toolClassString, toolObject);
+        } 
+        else 
+        {
+            System.out.println("Class: \"" + toolClassString + "\" already in Cache");
+        }
+
         return toolObject;
     }
 
