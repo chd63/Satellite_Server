@@ -1,0 +1,1 @@
+javac -d bin src/appserver/client/*.java src/appserver/comm/*.java src/appserver/job/*.java src/appserver/job/impl/*.java src/appserver/satellite/*.java src/utils/*.java src/web/*.java

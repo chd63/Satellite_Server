@@ -185,9 +185,7 @@ public class Satellite extends Thread {
 
                         Object result = tool.go(parameters);
 
-                        Message responseMessage = new Message(JOB_REQUEST, result);
-
-                        writeToNet.writeObject(responseMessage);
+                        writeToNet.writeObject((Integer)result);
 
                         writeToNet.flush();
                     }

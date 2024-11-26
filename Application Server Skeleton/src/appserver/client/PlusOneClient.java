@@ -68,7 +68,7 @@ public class PlusOneClient implements MessageTypes{
         if(args.length == 1) {
             client = new PlusOneClient(args[0]);
         } else {
-            client = new PlusOneClient("../../config/Server.properties");
+            client = new PlusOneClient("../config/Server.properties");
         }
         client.run();
     }  

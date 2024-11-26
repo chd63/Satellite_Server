@@ -201,7 +201,7 @@ public class SimpleWebServer extends GenericServer {
         if(args.length == 1) {
             webServer = new SimpleWebServer(args[0]);
         } else {
-            webServer = new SimpleWebServer("../../config/WebServer.properties");
+            webServer = new SimpleWebServer("../config/WebServer.properties");
         }
         
         webServer.run();
