@@ -38,32 +38,22 @@ public class Satellite extends Thread {
         // read this satellite's properties and populate satelliteInfo object,
         // which later on will be sent to the server
         // ...
-        PropertyHandler satelliteProps = new PropertyHandler(satellitePropertiesFile);
-        satelliteInfo.setHost(satelliteProps.getProperty("satellite.host"));
-        satelliteInfo.setPort(Integer.parseInt(satelliteProps.getProperty("satellite.port")));
-        satelliteInfo.setName(satelliteProps.getProperty("satellite.name"))
         
         
         // read properties of the application server and populate serverInfo object
         // other than satellites, the as doesn't have a human-readable name, so leave it out
         // ...
-        PropertyHandler serverProps = new PropertyHandler(serverPropertiesFile);
-        serverInfo.setHost(serverProps.getProperty("server.host"));
-        serverInfo.setPort(Integer.parseInt(serverProps.getProperty("server.port")));
         
         
         // read properties of the code server and create class loader
         // -------------------
         // ...
-        PropertyHandler classLoaderProps = new PropertyHandler(classLoaderPropertiesFile);
-        String codeServerHost = classLoaderProps.getProperty("codeServer.host");
-        int codeServerPort = Integer.parseInt(classLoaderProps.getProperty("codeServer.port"));
-        this.classLoader = new HTTPClassLoader(codeServerHost, codeServerPort);
+
         
         // create tools cache
         // -------------------
         // ...
-        this.toolsCache = new Hashtable<>();
+
         
     }
 
@@ -103,14 +93,34 @@ public class Satellite extends Thread {
         public void run() {
             // setting up object streams
             // ...
+            readFromNet = new ObjectInputStream(jobRequest.getInputStream());
+            writeToNet = new ObjectOutputStream(jobRequest.getOutputStream());
             
             // reading message
             // ...
+            message = (Message) readFromNet.readObject();
             
             switch (message.getType()) {
                 case JOB_REQUEST:
                     // processing job request
                     // ...
+                    Object content = message.getContent();
+
+                    Job job = (Job) content;
+
+                    String toolName = job.getToolName();
+
+                    Tool tool = satellite.getToolObject(toolName);
+
+                    Object parameters = job.getParameters();
+
+                    Object result = tool.go(parameters);
+
+                    Message responseMessage = new Message(JOB_REQUEST, result);
+
+                    writeToNet.writeObject(responseMessage);
+
+                    writeToNet.flush();
                     break;
 
                 default:
