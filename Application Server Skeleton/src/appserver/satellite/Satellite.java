@@ -97,18 +97,34 @@ public class Satellite extends Thread {
         
         // create server socket
         // ---------------------------------------------------------------
-        // ...
-        ServerSocket serverSocket = new ServerSocket(satelliteInfo.getPort());
+        ServerSocket serverSocket = null;
+
+        try
+        {
+            serverSocket = new ServerSocket(satelliteInfo.getPort());
+        }
+        catch (IOException e)
+        {
+            System.out.println("Error opening server socket");
+            System.exit(1);
+        }
         
         // start taking job requests in a server loop
         // ---------------------------------------------------------------
         // ...
         while (true) {
             // Accept incoming job requests
-            Socket jobRequest = serverSocket.accept();
+            try
+            {
+                Socket jobRequest = serverSocket.accept();
 
-            // Create a new thread to handle the job request
-            new SatelliteThread(jobRequest, this).start();
+                // Create a new thread to handle the job request
+                new SatelliteThread(jobRequest, this).start();
+            }
+            catch (IOException e)
+            {
+                System.out.println("Error accepting request");
+            }
         }
     }
 
@@ -130,18 +146,69 @@ public class Satellite extends Thread {
         public void run() {
             // setting up object streams
             // ...
-            
+            try
+            {
+                readFromNet = new ObjectInputStream(jobRequest.getInputStream());
+                writeToNet = new ObjectOutputStream(jobRequest.getOutputStream());
+            }
+            catch (IOException e)
+            {
+                System.out.println("Error getting input/output streams");
+            }
+
             // reading message
             // ...
-            
+            try
+            {
+                message = (Message) readFromNet.readObject();
+            }
+            catch (IOException | ClassNotFoundException e)
+            {
+                System.out.println("Error reading from stream");
+            }
+
             switch (message.getType()) {
                 case JOB_REQUEST:
                     // processing job request
                     // ...
+                    Object content = message.getContent();
+
+                    Job job = (Job) content;
+
+                    String toolName = job.getToolName();
+                    
+                    try
+                    {
+                        Tool tool = satellite.getToolObject(toolName);
+
+                        Object parameters = job.getParameters();
+
+                        Object result = tool.go(parameters);
+
+                        Message responseMessage = new Message(JOB_REQUEST, result);
+
+                        writeToNet.writeObject(responseMessage);
+
+                        writeToNet.flush();
+                    }
+                    catch (Exception e)
+                    {
+                        System.out.println("Something went wrong executing job");
+                    }
+                    
                     break;
 
                 default:
                     System.err.println("[SatelliteThread.run] Warning: Message type not implemented");
+            }
+
+            try
+            {
+                jobRequest.close();
+            }
+            catch (IOException e)
+            {
+                System.out.println("Error closing job request");
             }
         }
     }
