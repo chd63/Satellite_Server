@@ -10,14 +10,17 @@ import appserver.job.Tool;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.server.Operation;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.PropertyHandler;
+import java.util.Properties;
 
 /**
  * Class [Satellite] Instances of this class represent computing nodes that execute jobs by
@@ -31,29 +34,59 @@ public class Satellite extends Thread {
     private ConnectivityInfo satelliteInfo = new ConnectivityInfo();
     private ConnectivityInfo serverInfo = new ConnectivityInfo();
     private HTTPClassLoader classLoader = null;
-    private Hashtable toolsCache = null;
+    private Hashtable<String, Tool> toolsCache = null;
 
     public Satellite(String satellitePropertiesFile, String classLoaderPropertiesFile, String serverPropertiesFile) {
 
         // read this satellite's properties and populate satelliteInfo object,
         // which later on will be sent to the server
-        // ...
+        Properties satelliteProperties = null;
+        Properties serverProperties = null;
+        Properties classLoaderProperties = null;
+
+        try 
+        {
+            satelliteProperties = new PropertyHandler(satellitePropertiesFile);
+        } catch (IOException e) 
+        {
+            System.out.println("[Sattelite] Didn't find properties file \"" + satellitePropertiesFile + "\"");
+            System.exit(1);
+        }
         
+        satelliteInfo.setName(satelliteProperties.getProperty("NAME"));
+        satelliteInfo.setPort(Integer.parseInt(satelliteProperties.getProperty("PORT")));
         
         // read properties of the application server and populate serverInfo object
         // other than satellites, the as doesn't have a human-readable name, so leave it out
-        // ...
-        
+        try 
+        {
+            serverProperties = new PropertyHandler(serverPropertiesFile);
+        } catch (IOException e) 
+        {
+            System.out.println("[Sattelite] Didn't find properties file \"" + serverPropertiesFile + "\"");
+            System.exit(1);
+        }
+
+        serverInfo.setHost(serverProperties.getProperty("HOST"));
+        serverInfo.setPort(Integer.parseInt(serverProperties.getProperty("PORT")));
         
         // read properties of the code server and create class loader
         // -------------------
-        // ...
-
+        try 
+        {
+            classLoaderProperties = new PropertyHandler(classLoaderPropertiesFile);
+        } catch (IOException e) 
+        {
+            System.out.println("[Sattelite] Didn't find properties file \"" + classLoaderPropertiesFile + "\"");
+            System.exit(1);
+        }
         
+        classLoader = new HTTPClassLoader(serverProperties.getProperty("HOST"), 
+                                          Integer.parseInt(serverProperties.getProperty("PORT")));
+
         // create tools cache
         // -------------------
-        // ...
-        
+        toolsCache = new Hashtable<String, Tool>();
     }
 
     @Override
@@ -122,8 +155,25 @@ public class Satellite extends Thread {
 
         Tool toolObject = null;
 
-        // ...
-        
+        if ((toolObject = toolsCache.get(toolClassString)) == null) 
+        {
+            Class<?> toolClass = classLoader.loadClass(toolClassString);
+
+            try 
+            {
+                toolObject = (Tool)toolClass.getDeclaredConstructor().newInstance();
+            } 
+            catch (InvocationTargetException | NoSuchMethodException ex) {
+                System.err.println("getToolObject() - Exception");
+            }
+
+            toolsCache.put(toolClassString, toolObject);
+        } 
+        else 
+        {
+            System.out.println("Class: \"" + toolClassString + "\" already in Cache");
+        }
+
         return toolObject;
     }
 
