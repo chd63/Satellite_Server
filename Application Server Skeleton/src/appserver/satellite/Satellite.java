@@ -224,7 +224,7 @@ public class Satellite extends Thread {
         if ((toolObject = toolsCache.get(toolClassString)) == null) 
         {
             System.out.println("Class: \"" + toolClassString + "\" not in Cache, retrieving...");
-            Class<?> toolClass = classLoader.findClass(toolClassString);
+            Class<?> toolClass = classLoader.loadClass(toolClassString);
 
             try 
             {
