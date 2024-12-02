@@ -71,7 +71,7 @@ public class HTTPClassLoader extends ClassLoader {
             String classPath = className.replace('.', '/') + ".class";
 
             String stringToNet = "GET " + classPath + " HTTP/1.0 \r\n\r\n";
-            System.err.println("\nRequest to Server: \n\"GET " + classPath + " HTTP/1.0\"");
+            System.out.println("\nRequest to Server: \n\"GET " + classPath + " HTTP/1.0\"");
 
             //  ... requesting class file ...
             writeToNet.print(stringToNet);
@@ -79,14 +79,14 @@ public class HTTPClassLoader extends ClassLoader {
 
 	    // **************************************************************************************************
             // process header information ...
-            System.err.println("\nServer responds:");
+            System.out.println("\nServer responds:");
             int i = -1;
             while ((protocolHeaderLine[++i] = readFromNet.readByte()) != (byte) '\n') {
                 ; // empty loop
             }
             i--;
             inputLine = new String(protocolHeaderLine, 0, i);
-            System.err.println(inputLine);
+            System.out.println(inputLine);
 
             StringTokenizer tokenizer = new StringTokenizer(inputLine);
             tokenizer.nextToken();
@@ -101,7 +101,7 @@ public class HTTPClassLoader extends ClassLoader {
                     }
                     i--;
                     inputLine = new String(protocolHeaderLine, 0, i);
-                    System.err.println(inputLine);
+                    System.out.println(inputLine);
 
                     // look for empty line, there is the beginning of the class file data
                     if (inputLine.trim().equals("")) {
@@ -151,7 +151,7 @@ public class HTTPClassLoader extends ClassLoader {
             throw new ClassNotFoundException("No class file present or class file empty");
         }
 
-        System.err.println("Bytes Class \"" + className + "\" loaded");
+        System.out.println("Bytes Class \"" + className + "\" loaded");
 
         return classData;
     }

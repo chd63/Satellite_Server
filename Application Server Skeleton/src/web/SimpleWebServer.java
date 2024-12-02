@@ -38,7 +38,7 @@ public class SimpleWebServer extends GenericServer {
             documentRoot = properties.getProperty("DOC_ROOT");
 
         } catch (Exception e) {
-            System.err.println("Properties file " + webServerPropertiesFile + " not found, exiting ...");
+            System.out.println("Properties file " + webServerPropertiesFile + " not found, exiting ...");
             System.exit(1);
         }
     }
@@ -109,7 +109,7 @@ public class SimpleWebServer extends GenericServer {
                     }
 
                     try {
-                        System.err.println("File to serve: " + "\"" + fileString + "\"");
+                        System.out.println("File to serve: " + "\"" + fileString + "\"");
                         fileToServe = new File(SimpleWebServer.documentRoot, fileString);
                         FileInputStream fis = new FileInputStream(fileToServe);
                         byte[] theData = new byte[(int) fileToServe.length()];
@@ -129,7 +129,7 @@ public class SimpleWebServer extends GenericServer {
                         // Send the file
                         writeToNet.write(theData);
                         writeToNet.close();
-                        System.err.println("File: " + fileToServe + " sent\n");
+                        System.out.println("File: " + fileToServe + " sent\n");
 
                     } catch (IOException e) {
                         // Cannot find the file
@@ -143,7 +143,7 @@ public class SimpleWebServer extends GenericServer {
                         writeToNet.println("<HTML><HEAD><TITLE>File Not Found</TITLE></HEAD>");
                         writeToNet.println("<BODY><H1>HTTP Error 404: File Not Found</H1></BODY></HTML>");
                         writeToNet.close();
-                        System.err.println("File: " + fileToServe + " not found\n");
+                        System.out.println("File: " + fileToServe + " not found\n");
                     }
                 } else {
                     // Method doesn't equal "GET"
@@ -159,7 +159,7 @@ public class SimpleWebServer extends GenericServer {
                     writeToNet.println("<BODY><H1>HTTP Error 501: Not Implemented</H1></BODY></HTML>");
                     writeToNet.close();
 
-                    System.err.println("Method: " + httpMethod + " is not supported\n");
+                    System.out.println("Method: " + httpMethod + " is not supported\n");
 
                 }
             } catch (IOException e) {

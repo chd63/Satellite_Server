@@ -41,7 +41,7 @@ public class PlusOneClient implements MessageTypes{
             
             // hard-coded string of class, aka tool name ... plus one argument
             String classString = "appserver.job.impl.PlusOne";
-            Integer number = new Integer(42);
+            Integer number = (Integer)42;
             
             // create job and job request message
             Job job = new Job(classString, number);
@@ -50,12 +50,15 @@ public class PlusOneClient implements MessageTypes{
             // sending job out to the application server in a message
             ObjectOutputStream writeToNet = new ObjectOutputStream(server.getOutputStream());
             writeToNet.writeObject(message);
+            writeToNet.flush();
             
             // reading result back in from application server
             // for simplicity, the result is not encapsulated in a message
             ObjectInputStream readFromNet = new ObjectInputStream(server.getInputStream());
             Integer result = (Integer) readFromNet.readObject();
             System.out.println("RESULT: " + result);
+
+            server.close();
         } catch (Exception ex) {
             System.err.println("[PlusOneClient.run] Error occurred");
             ex.printStackTrace();

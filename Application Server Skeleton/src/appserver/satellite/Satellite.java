@@ -81,8 +81,8 @@ public class Satellite extends Thread {
             System.exit(1);
         }
         
-        classLoader = new HTTPClassLoader(serverProperties.getProperty("HOST"), 
-                                          Integer.parseInt(serverProperties.getProperty("PORT")));
+        classLoader = new HTTPClassLoader(classLoaderProperties.getProperty("HOST"), 
+                                          Integer.parseInt(classLoaderProperties.getProperty("PORT")));
 
         // create tools cache
         // -------------------
@@ -153,7 +153,8 @@ public class Satellite extends Thread {
             }
             catch (IOException e)
             {
-                System.out.println("Error getting input/output streams");
+                System.out.println("Error getting input/output streams:" + e);
+                System.exit(1);
             }
 
             // reading message
@@ -222,7 +223,8 @@ public class Satellite extends Thread {
 
         if ((toolObject = toolsCache.get(toolClassString)) == null) 
         {
-            Class<?> toolClass = classLoader.loadClass(toolClassString);
+            System.out.println("Class: \"" + toolClassString + "\" not in Cache, retrieving...");
+            Class<?> toolClass = classLoader.findClass(toolClassString);
 
             try 
             {
